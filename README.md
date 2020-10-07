@@ -17,8 +17,9 @@ import {CacheImage} from "@sk39/expo-image-cache"
 
 class Example extends Component {
   render () {
+    const source = {uri: "https://picsum.photos/510/300?random"}
     return (
-      <CacheImage />
+         <CacheImage source={source}/>
     )
   }
 }
