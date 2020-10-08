@@ -7,6 +7,8 @@ interface Props {
   source: ImageSourcePropType;
   style?: StyleProp<ImageStyle>;
   backgroundColor?: string;
+  onLoaded?: () => void;
+  onError?: () => void;
 }
 
 interface State {
@@ -44,6 +46,7 @@ export default class CacheImage extends Component<Props, State> {
     const {source} = this.props;
     const uri = (source as any).uri;
     if (uri && uri !== (prevProps.source as any).uri) {
+      this.setState({localPath: null, loadError: false});
       this.loadLocalPath(uri).then()
     }
   }
@@ -58,6 +61,13 @@ export default class CacheImage extends Component<Props, State> {
     const imageStore = ImageStore.getInstance()
     const entry = await imageStore.cache(uri);
     this.setState({localPath: entry.localUri, loadError: entry.error})
+    if (entry.error) {
+      if (this.props.onError)
+        this.props.onError();
+    } else {
+      if (this.props.onLoaded)
+        this.props.onLoaded();
+    }
   }
 
   reload = (soft?: boolean) => {
@@ -79,7 +89,7 @@ export default class CacheImage extends Component<Props, State> {
     if ((source as any).uri) {
       const {localPath, loadError} = this.state;
       if (loadError) {
-        return <View style={[styles.image, {backgroundColor: backgroundColor}]}/>
+        return <View style={[styles.image, style, {backgroundColor}]}/>
       }
 
       return (
@@ -94,7 +104,8 @@ export default class CacheImage extends Component<Props, State> {
     }
 
     return (
-      <Image source={source} style={[styles.image, style]}/>
+      <Image source={source}
+             style={[styles.image, style, {backgroundColor}]}/>
     )
   }
 }
